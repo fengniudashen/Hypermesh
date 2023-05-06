@@ -1,0 +1,63 @@
+proc tezh_operation_dict {edges_dict} {
+    set result_dict [dict create]
+    
+    dict for {id_list edge_id} $edges_dict {
+        set alength [hm_linelength $edge_id]
+        set start [hm_getlinestartpoint $edge_id]
+        set end [hm_getlineendpoint $edge_id]
+        
+        set x1 [lindex $start 0]
+        set y1 [lindex $start 1]
+        set z1 [lindex $start 2]
+        set x2 [lindex $end 0]
+        set y2 [lindex $end 1]
+        set z2 [lindex $end 2]
+        
+        set tezh [expr {$alength * $alength / (($x1 - $z2) * ($x1 - $z2) + ($x2 - $y1) * ($x2 - $y1) + ($y2  - $z1) * ($y2 - $z1))}]
+        
+        foreach id $id_list {
+            if {[dict exists $result_dict $tezh]} {
+                dict lappend result_dict $tezh $edge_id
+            } else {
+                dict set result_dict $tezh [list $edge_id]
+            }
+        }
+    }
+    
+    # 新定义一个排序函数，用于按照键的大小进行排序
+    proc mySortFunc {a b} {
+        set a_val [lindex [dict get $result_dict $a] 0]
+        set b_val [lindex [dict get $result_dict $b] 0]
+        return [expr {$a_val > $b_val}]
+    }
+    
+    set sorted_dict [dict create]
+    # 使用 mySortFunc 函数对键进行排序
+    foreach key [lsort -command mySortFunc [dict keys $result_dict]] {
+        dict set sorted_dict $key [dict get $result_dict $key]
+    }
+    
+    return $sorted_dict
+}
+
+
+
+proc create_arithmetic_dict {input_dict} {
+    set output_dict [dict create]
+    set counter 1
+    
+    # 循环遍历字典中的键
+    dict for {key val} $input_dict {
+        # 将当前计数器的值放入新字典中，与当前键关联
+        dict set output_dict $val $counter
+        # 将计数器加1，以便下次循环使用
+        incr counter
+    }
+    
+    return $output_dict
+}
+
+
+
+
+
